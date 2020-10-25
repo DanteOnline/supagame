@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import time
 from pynput.keyboard import Key, Controller
 
 keyboard = Controller()
@@ -19,10 +20,12 @@ while (True):
     thresh = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, st2)
     thresh = cv2.GaussianBlur(thresh, (5, 5), 2)
 
-    circles = cv2.HoughCircles(thresh, cv2.HOUGH_GRADIENT, 2, 1, np.array([]), 80, 50, 5, 0)
+    #circles = cv2.HoughCircles(thresh, cv2.HOUGH_GRADIENT, 2, 1, np.array([]), 80, 50, 5, 0)
+    circles = cv2.HoughCircles(thresh, cv2.HOUGH_GRADIENT, 3, 1, np.array([]), 80, 50, 1, 0)
 
     if circles.size != 0:
         # print(circles)
+        # print(time.time())
         maxRadius = 0
         x = 0
         y = 0
@@ -35,30 +38,45 @@ while (True):
                 x = int(c[0])
                 y = int(c[1])
         if found:
-            cv2.circle(frame, (x, y), 3, (0, 255, 0), -1)
-            cv2.circle(frame, (x, y), maxRadius, (255, 0, 0), 3)
+            # Отрисовка круга в изображении
+            #cv2.circle(frame, (x, y), 3, (0, 255, 0), -1)
+            #v2.circle(frame, (x, y), maxRadius, (255, 0, 0), 3)
+            cv2.line(thresh, (213, 0), (213, 480), (255, 0, 0), 1)
+
 
             # x 0 - 640
             # y 0 - 480
             w = 'центр'
+
             if x > 426:
-                w = 'лево'
-                keyboard.press('a')
+                if x > 550:
+                    keyboard.press('l')
+                else:
+                    w = 'лево'
+                    keyboard.release('l')
+                    keyboard.press('a')
                 # keyboard.release('a')
             elif x < 213:
-                w = 'право'
-                keyboard.press('d')
+                if x < 90:
+                    keyboard.press('l')
+                else:
+                    w = 'право'
+                    keyboard.release('l')
+                    keyboard.press('d')
             else:
                 w = 'центр'
                 keyboard.release('d')
                 keyboard.release('a')
+                keyboard.release('l')
 
                 # keyboard.release('d')
             h = 'центр'
-            if y > 320:
+            #if y > 320:
+            if y > 450 and x > 210 and x < 420:
                 h = 'низ'
                 keyboard.press('s')
-            elif y < 160:
+            #elif y < 160:
+            elif y < 350:
                 keyboard.press('k')
                 h = 'верх'
             else:
@@ -71,8 +89,8 @@ while (True):
     # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GREEN)
 
     # Display the resulting frame
-    # cv2.imshow('frame', thresh)
-    cv2.imshow('frame', frame)
+    cv2.imshow('frame', thresh)
+    #cv2.imshow('frame', frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
